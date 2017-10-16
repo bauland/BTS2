@@ -1,0 +1,5 @@
+*.user
+FEZBlinkButton/FEZBlinkButton/bin/
+FEZBlinkButton/FEZBlinkButton/obj/
+FEZBlinkButton/.vs/
+FEZBlinkButton/_ReSharper.Caches/
