@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Threading;
 using GHIElectronics.TinyCLR.Devices.Gpio;
 using GHIElectronics.TinyCLR.Pins;
+using DeviceInformation = System.Runtime.InteropServices.DeviceInformation;
 
 namespace FEZBlinkButton
 {
-    class Program
+    static class Program
     {
         private static GpioPin _led;
         private static GpioPin _button;
@@ -23,18 +22,41 @@ namespace FEZBlinkButton
                 Loop();
                 Thread.Sleep(20);
             }
+            // ReSharper disable once FunctionNeverReturns
         }
 
         private static void Setup()
         {
-            // Utilisation de la carte FEZ Cerberus
+            switch (DeviceInformation.DeviceName)
+            {
+                case "Cerb":
+                    // Utilisation de la carte FEZ Cerberus
+                    SetupBoard(FEZCerberus.GpioPin.DebugLed,FEZCerberus.GpioPin.Socket5.Pin3, FEZCerberus.GpioPin.Socket5.Pin4);
+                    break;
+                case "EMX":
+                    // Utilisation de la carte FEZ Cerberus
+                    SetupBoard(FEZSpider.GpioPin.DebugLed, FEZSpider.GpioPin.Socket5.Pin3,FEZSpider.GpioPin.Socket5.Pin4);
+                    break;
+                default:
+                    Debug.WriteLine("unkwon board: " + DeviceInformation.DeviceName);
+                    break;
+            }
+        }
 
+        private static void SetupBoard(int ledPin, int buttonPin, int ledButtonPin)
+        {
             // Création de la broche _led pour piloter la DEL.
-            _led = GpioController.GetDefault().OpenPin(FEZCerberus.GpioPin.DebugLed);
+            // Utilisation de la DEL de la carte
+            _led = GpioController.GetDefault().OpenPin(ledPin);
             _led.SetDriveMode(GpioPinDriveMode.Output);
 
+            var buttonLed = GpioController.GetDefault().OpenPin(ledButtonPin);
+            buttonLed.SetDriveMode(GpioPinDriveMode.Output);
+            buttonLed.Write(GpioPinValue.Low);
+
             // Création de la broche _button pour piloter le bouton.
-            _button = GpioController.GetDefault().OpenPin(FEZCerberus.GpioPin.Socket3.Pin3);
+            // Branchement du module bouton sur la connexion 3 sur Cerberus
+            _button = GpioController.GetDefault().OpenPin(buttonPin);
             _button.SetDriveMode(GpioPinDriveMode.InputPullUp);
             // La fonction _button_ValueChanged sera appelée à chaque fois que la valeur de la broche du bouton change.
             _button.ValueChanged += _button_ValueChanged;
