@@ -72,7 +72,7 @@ namespace FEZBlinkButton
             if(_button.Read()==GpioPinValue.High)
                 _buttonLed.Write(GpioPinValue.Low);
             if(_button.Read()==GpioPinValue.Low)
-                _buttonLed.Write(GpioPinValue.High);
+                _buttonLed.Write(GpioPinValue.Low);
         }
     }
 }
