@@ -8,7 +8,8 @@ namespace FEZBlinkButton
 {
     static class Program
     {
-        private static GpioPin _led;
+        private static GpioPin _motherboardLed;
+        private static GpioPin _buttonLed;
         private static GpioPin _button;
 
         static void Main()
@@ -34,8 +35,12 @@ namespace FEZBlinkButton
                     SetupBoard(FEZCerberus.GpioPin.DebugLed,FEZCerberus.GpioPin.Socket5.Pin3, FEZCerberus.GpioPin.Socket5.Pin4);
                     break;
                 case "EMX":
-                    // Utilisation de la carte FEZ Cerberus
-                    SetupBoard(FEZSpider.GpioPin.DebugLed, FEZSpider.GpioPin.Socket5.Pin3,FEZSpider.GpioPin.Socket5.Pin4);
+                    // Utilisation de la carte FEZ Spider 1.0
+                    SetupBoard(FEZSpider.GpioPin.DebugLed, FEZSpider.GpioPin.Socket5.Pin3, FEZSpider.GpioPin.Socket5.Pin4);
+                    break;
+                case "G120":
+                    // Utilisation de la carte FEZ Spider 2.0
+                    SetupBoard(FEZSpiderII.GpioPin.DebugLed, FEZSpiderII.GpioPin.Socket5.Pin3, FEZSpiderII.GpioPin.Socket5.Pin4);
                     break;
                 default:
                     Debug.WriteLine("unkwon board: " + DeviceInformation.DeviceName);
@@ -43,47 +48,31 @@ namespace FEZBlinkButton
             }
         }
 
-        private static void SetupBoard(int ledPin, int buttonPin, int ledButtonPin)
+        private static void SetupBoard(int ledMotherBoardPin, int buttonPin, int ledButtonPin)
         {
             // Création de la broche _led pour piloter la DEL.
             // Utilisation de la DEL de la carte
-            _led = GpioController.GetDefault().OpenPin(ledPin);
-            _led.SetDriveMode(GpioPinDriveMode.Output);
+            _motherboardLed = GpioController.GetDefault().OpenPin(ledMotherBoardPin);
+            _motherboardLed.SetDriveMode(GpioPinDriveMode.Output);
+            _motherboardLed.Write(GpioPinValue.High);
 
-            var buttonLed = GpioController.GetDefault().OpenPin(ledButtonPin);
-            buttonLed.SetDriveMode(GpioPinDriveMode.Output);
-            buttonLed.Write(GpioPinValue.Low);
+            _buttonLed = GpioController.GetDefault().OpenPin(ledButtonPin);
+            _buttonLed.SetDriveMode(GpioPinDriveMode.Output);
+            _buttonLed.Write(GpioPinValue.Low);
 
             // Création de la broche _button pour piloter le bouton.
             // Branchement du module bouton sur la connexion 3 sur Cerberus
             _button = GpioController.GetDefault().OpenPin(buttonPin);
             _button.SetDriveMode(GpioPinDriveMode.InputPullUp);
             // La fonction _button_ValueChanged sera appelée à chaque fois que la valeur de la broche du bouton change.
-            _button.ValueChanged += _button_ValueChanged;
-        }
-
-        private static void _button_ValueChanged(GpioPin sender, GpioPinValueChangedEventArgs e)
-        {
-            // La fonction de clignotement est appelée à chaque fois que l'on appuie sur le bouton.
-            if (e.Edge == GpioPinEdge.FallingEdge)
-                BlinkLed();
-        }
-
-        private static void BlinkLed()
-        {
-            // On fait clignoter rapidement 4 fois la DEL.
-            for (int i = 0; i < 4; i++)
-            {
-                _led.Write(GpioPinValue.High);
-                Thread.Sleep(200);
-                _led.Write(GpioPinValue.Low);
-                Thread.Sleep(200);
-            }
         }
 
         private static void Loop()
         {
-
+            if(_button.Read()==GpioPinValue.High)
+                _buttonLed.Write(GpioPinValue.Low);
+            if(_button.Read()==GpioPinValue.Low)
+                _buttonLed.Write(GpioPinValue.High);
         }
     }
 }
