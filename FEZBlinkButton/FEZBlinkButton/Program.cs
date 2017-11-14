@@ -37,6 +37,10 @@ namespace FEZBlinkButton
                     // Utilisation de la carte FEZ Cerberus
                     SetupBoard(FEZSpider.GpioPin.DebugLed, FEZSpider.GpioPin.Socket5.Pin3,FEZSpider.GpioPin.Socket5.Pin4);
                     break;
+                case "FEZCLR":
+                    // Utilisation de la carte Brainpad
+                    SetupBoard(BrainPad.GpioPin.LightBulbBlue,BrainPad.GpioPin.ButtonLeft,BrainPad.GpioPin.LightBulbGreen);
+                    break;
                 default:
                     Debug.WriteLine("unkwon board: " + DeviceInformation.DeviceName);
                     break;
